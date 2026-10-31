@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Kullanıcı profil ve ayar bilgileri",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "currentGrade": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId"]
+    },
+    "CalendarTask": {
+      "title": "CalendarTask",
+      "description": "Öğrenci ders çalışma takvimi görevi",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "grade": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "unitId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "topicName": { "type": "string" },
+        "customActivityName": { "type": "string" },
+        "taskType": { "type": "string" },
+        "date": { "type": "string" },
+        "startTime": { "type": "string" },
+        "durationMinutes": { "type": "number" },
+        "recurrence": { "type": "string" },
+        "targetCount": { "type": "number" },
+        "actualCount": { "type": "number" },
+        "correctCount": { "type": "number" },
+        "wrongCount": { "type": "number" },
+        "completed": { "type": "boolean" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "title", "grade", "subjectId", "date", "startTime", "durationMinutes", "completed"]
+    },
+    "MockExam": {
+      "title": "MockExam",
+      "description": "LGS ve okul deneme sınavı sonucu",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "publisher": { "type": "string" },
+        "date": { "type": "string" },
+        "grade": { "type": "string" },
+        "results": { "type": "object" },
+        "totalScore": { "type": "number" },
+        "totalNet": { "type": "number" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "title", "date", "grade"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Kullanıcı profil dokümanı"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "CalendarTask",
+      "description": "Kullanıcıya özel ders takvimi görevleri"
+    },
+    "/users/{userId}/mockExams/{examId}": {
+      "schema": "MockExam",
+      "description": "Kullanıcıya özel deneme sınavı sonuçları"
+    }
+  }
+}

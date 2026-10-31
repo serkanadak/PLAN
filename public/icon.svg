@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="50%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle with padding safe-zone -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Inner Calendar / Plan Board Card -->
+  <g filter="url(#shadow)" transform="translate(80, 80)">
+    <rect width="352" height="352" rx="44" fill="#ffffff" />
+    
+    <!-- Calendar Top Bar -->
+    <path d="M 0 44 C 0 19.7 19.7 0 44 0 L 308 0 C 332.3 0 352 19.7 352 44 L 352 96 L 0 96 Z" fill="#2563eb" />
+    
+    <!-- Binder Rings -->
+    <rect x="76" y="-14" width="24" height="40" rx="12" fill="#e2e8f0" stroke="#1e293b" stroke-width="4" />
+    <rect x="252" y="-14" width="24" height="40" rx="12" fill="#e2e8f0" stroke="#1e293b" stroke-width="4" />
+
+    <!-- Grid / Maarif Checklist Elements -->
+    <circle cx="88" cy="160" r="18" fill="#10b981" />
+    <path d="M 80 160 L 86 166 L 98 152" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <rect x="124" y="150" width="160" height="20" rx="10" fill="#f1f5f9" />
+
+    <circle cx="88" cy="220" r="18" fill="#3b82f6" />
+    <path d="M 80 220 L 86 226 L 98 212" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <rect x="124" y="210" width="130" height="20" rx="10" fill="#f1f5f9" />
+
+    <!-- Star / Achievement Badge -->
+    <circle cx="88" cy="280" r="18" fill="url(#accentGrad)" />
+    <polygon points="88,269 91,277 100,277 93,282 96,290 88,285 80,290 83,282 76,277 85,277" fill="#ffffff" />
+    <rect x="124" y="270" width="170" height="20" rx="10" fill="#f1f5f9" />
+  </g>
+</svg>

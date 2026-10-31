@@ -1,0 +1,6 @@
+{
+  "name": "MaarifPlan - LGS & Ortaokul Ders Takvimi ve Analitik",
+  "description": "6, 7 ve 8. sınıf öğrencileri için Yeni Maarif Modeli uyumlu akıllı ders çalışma takvimi, sürükle-bırak müfredat planlama ve koçluk analitik platformu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
