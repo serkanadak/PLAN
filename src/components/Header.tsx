@@ -14,6 +14,8 @@ import {
   LogIn,
   LogOut,
   User as UserIcon,
+  Bell,
+  BellRing,
 } from 'lucide-react';
 import { calculateCountdown } from '../utils/dateUtils';
 
@@ -23,6 +25,8 @@ interface HeaderProps {
   activeTab: ViewTab;
   onTabChange: (tab: ViewTab) => void;
   onOpenBackup?: () => void;
+  onOpenNotifications?: () => void;
+  notificationsEnabled?: boolean;
   user?: User | null;
   onSignIn?: () => Promise<void>;
   onSignOut?: () => Promise<void>;
@@ -34,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onTabChange,
   onOpenBackup,
+  onOpenNotifications,
+  notificationsEnabled = false,
   user,
   onSignIn,
   onSignOut,
@@ -168,7 +174,32 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right: ALWAYS VISIBLE Cloud & Auth Action (Both mobile & desktop) */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Notification Alert Trigger */}
+            {onOpenNotifications && (
+              <button
+                type="button"
+                onClick={onOpenNotifications}
+                className={`cursor-pointer relative p-1.5 sm:p-2 rounded-lg border transition-all ${
+                  notificationsEnabled
+                    ? 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-300'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+                }`}
+                title={notificationsEnabled ? 'Ders Hatırlatıcıları: Açık' : 'Ders Hatırlatıcılarını Aç'}
+              >
+                {notificationsEnabled ? (
+                  <BellRing className="w-4 h-4 text-amber-600" />
+                ) : (
+                  <Bell className="w-4 h-4 text-slate-600" />
+                )}
+                {notificationsEnabled ? (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
+                ) : (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                )}
+              </button>
+            )}
+
             {onOpenBackup && (
               <button
                 type="button"

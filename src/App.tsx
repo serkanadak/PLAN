@@ -19,7 +19,14 @@ import { AnalyticsDashboard } from './components/Dashboard/AnalyticsDashboard';
 import { MockExamsView } from './components/Exams/MockExamsView';
 import { CurriculumExplorer } from './components/Curriculum/CurriculumExplorer';
 import { DataBackupModal } from './components/Storage/DataBackupModal';
+import { NotificationModal } from './components/Notifications/NotificationModal';
 import { formatDateToISO } from './utils/dateUtils';
+import {
+  NotificationSettings,
+  loadNotificationSettings,
+  saveNotificationSettings,
+  checkUpcomingTasksAndNotify,
+} from './utils/notifications';
 import {
   loadTasksFromStorage,
   saveTasksToStorage,
@@ -60,6 +67,41 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalTask, setModalTask] = useState<Partial<CalendarTask> | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState<boolean>(false);
+
+  // Notification Settings State
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() =>
+    loadNotificationSettings()
+  );
+
+  const handleUpdateNotificationSettings = (newSettings: NotificationSettings) => {
+    setNotificationSettings(newSettings);
+    saveNotificationSettings(newSettings);
+  };
+
+  // Register Service Worker for PWA and Notifications
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('Service worker could not register:', err);
+      });
+    }
+  }, []);
+
+  // Periodic reminder checker for upcoming tasks
+  useEffect(() => {
+    if (!notificationSettings.enabled) return;
+
+    // Run immediate check
+    checkUpcomingTasksAndNotify(tasks, notificationSettings);
+
+    // Check every 30 seconds
+    const interval = setInterval(() => {
+      checkUpcomingTasksAndNotify(tasks, notificationSettings);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [tasks, notificationSettings]);
 
   // Subscribe to Firebase Auth changes
   useEffect(() => {
@@ -298,6 +340,8 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={(t) => setActiveTab(t)}
         onOpenBackup={() => setIsBackupModalOpen(true)}
+        onOpenNotifications={() => setIsNotificationModalOpen(true)}
+        notificationsEnabled={notificationSettings.enabled}
         user={user}
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
@@ -388,6 +432,14 @@ export default function App() {
         onSignOut={handleSignOut}
         onUploadLocalToCloud={handleUploadLocalToCloud}
         authError={authError}
+      />
+
+      {/* Notification Settings & PWA Links Modal */}
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        settings={notificationSettings}
+        onUpdateSettings={handleUpdateNotificationSettings}
       />
     </div>
   );
