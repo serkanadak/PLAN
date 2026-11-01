@@ -192,57 +192,57 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     };
   }, [filteredTasks]);
 
-  // Behavioral Insights Engine
+  // Behavioral Insights Engine (Tamamen gerçek öğrenci verilerinden dinamik üretilir)
   const insights: DailyInsight[] = useMemo(() => {
     const list: DailyInsight[] = [];
+    if (filteredTasks.length === 0) return list;
 
-    // Tuesday insight (En verimli gün)
-    list.push({
-      id: 'ins-tue',
-      type: 'success',
-      title: 'En Verimli Günün: Salı',
-      message:
-        'Salı günleri görev tamamlama oranın %100 ve soru çözme verimin ortalamanın %28 üzerinde. Bu tempo ritmini korumalısın.',
-      metric: '%100 Tamamlama',
+    // En verimli gün tespiti
+    let bestDayName = '';
+    let maxCompleted = 0;
+    const DAY_NAMES = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    Object.entries(stats.dayStats).forEach(([dayIdx, day]) => {
+      if (day.completed > maxCompleted) {
+        maxCompleted = day.completed;
+        bestDayName = DAY_NAMES[Number(dayIdx)] || '';
+      }
     });
 
-    // Thursday insight (Görev tamamlama düşüyor)
-    list.push({
-      id: 'ins-thu',
-      type: 'warning',
-      title: 'Perşembe Günleri Tamamlama Oranı Düşüyor',
-      message:
-        'Haftalık verilerine göre Perşembe günleri görevlerin yalnızca %37’si tamamlanıyor. Okul yorgunluğu nedeniyle Perşembe günleri ağır soru yerine konu özeti veya dinlenme molası eklemen önerilir.',
-      metric: '%37 Başarı',
-      actionText: 'Perşembe Programını Hafiflet',
-    });
-
-    // Subject Math highlight
-    const matStats = stats.subjectStats.matematik;
-    if (matStats.actualQuestions >= 80) {
+    if (maxCompleted > 0 && bestDayName) {
       list.push({
-        id: 'ins-mat',
-        type: 'tip',
-        title: 'Matematik Soru Hedefi Yakalandı',
-        message: `Bu dönem hedeflenen ${matStats.targetQuestions} sorunun ${matStats.actualQuestions} tanesi çözüldü (%${
-          matStats.targetQuestions > 0 ? Math.round((matStats.actualQuestions / matStats.targetQuestions) * 100) : 0
-        }). Yeni Nesil soru netlerin artış trendinde!`,
-        metric: `${matStats.actualQuestions} Soru`,
+        id: 'ins-best-day',
+        type: 'success',
+        title: `En Aktif Günün: ${bestDayName}`,
+        message: `${bestDayName} günleri toplam ${maxCompleted} görev tamamladın. Bu çalışma temposunu sürdürmelisin.`,
+        metric: `${maxCompleted} Görev`,
       });
     }
 
-    // Unutma Eğrisi Uyarısı
-    list.push({
-      id: 'ins-curve',
-      type: 'info',
-      title: 'Hermann Ebbinghaus Unutma Eğrisi Uyarısı',
-      message:
-        'Fen Bilimleri "Mevsimler ve İklim" konusunun üzerinden 12 gün geçti. Kalıcı hafıza için bu hafta sonuna 20 pekiştirme sorusu eklemen önerilir.',
-      actionText: 'Takvime Tekrar Ekle',
-    });
+    // Yüksek tamamlama oranı tespiti
+    if (stats.completionRate >= 75 && stats.totalTasksCount >= 2) {
+      list.push({
+        id: 'ins-completion',
+        type: 'tip',
+        title: 'Harika Tamamlama Oranı',
+        message: `Planlanan görevlerin %${stats.completionRate}'ini başarıyla tamamladın. Düzenli çalışma LGS başarısının anahtarıdır.`,
+        metric: `%${stats.completionRate} Başarı`,
+      });
+    }
+
+    // Soru hedefine ulaşma durumu
+    if (stats.totalTargetQuestions > 0 && stats.totalActualQuestions > 0) {
+      const qRate = Math.round((stats.totalActualQuestions / stats.totalTargetQuestions) * 100);
+      list.push({
+        id: 'ins-questions',
+        type: qRate >= 100 ? 'success' : 'info',
+        title: qRate >= 100 ? 'Soru Çözüm Hedefi Yakalandı!' : 'Soru Çözüm İlerlemesi',
+        message: `Hedeflenen ${stats.totalTargetQuestions} sorunun ${stats.totalActualQuestions} tanesi tamamlandı (%${qRate}).`,
+        metric: `${stats.totalActualQuestions}/${stats.totalTargetQuestions}`,
+      });
+    }
 
     return list;
-  }, [stats]);
+  }, [stats, filteredTasks]);
 
   // Total study hours
   const totalHours = (stats.totalMinutes / 60).toFixed(1);
@@ -861,12 +861,18 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             })}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl flex items-center justify-between">
-            <span>
-              💡 Matematikte <strong>173/170 soru</strong> ile hedef <span className="text-emerald-600 font-bold">%101</span> aşıldı!
-            </span>
-            <span className="font-semibold text-blue-600">Ders satırına tıklayarak inceleyin</span>
-          </div>
+          {stats.totalActualQuestions > 0 ? (
+            <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl flex items-center justify-between">
+              <span>
+                💡 Toplam <strong>{stats.totalActualQuestions} soru</strong> çözüldü {stats.totalTargetQuestions > 0 ? `(Hedef tamamlama: %${stats.questionRate})` : ''}
+              </span>
+              <span className="font-semibold text-blue-600">Ders satırına tıklayarak inceleyin</span>
+            </div>
+          ) : (
+            <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-400 bg-slate-50 p-2.5 rounded-xl text-center">
+              Dersler için henüz soru çözümü kaydedilmedi. Takvimden soru görevlerinizi ekleyip tamamlayabilirsiniz.
+            </div>
+          )}
         </div>
 
         {/* CHART 2: Subject Time Distribution (Ders Bazlı Dağılım) - 5 cols */}
@@ -983,11 +989,20 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </div>
           </div>
           <span className="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 font-semibold font-mono">
-            4 Aktif İçgörü
+            {insights.length} Aktif İçgörü
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {insights.length === 0 && (
+            <div className="md:col-span-2 py-8 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2 bg-white/5 rounded-xl border border-white/10">
+              <Sparkles className="w-6 h-6 text-amber-400/70" />
+              <p className="font-semibold text-slate-300">Henüz yeterli çalışma verisi toplanmadı.</p>
+              <p className="max-w-md text-slate-400 text-[11px]">
+                Takvimden yeni çalışma görevleri ekleyip tamamladıkça; en verimli günleriniz, soru başarı oranlarınız ve pekiştirme önerileriniz burada otomatik olarak analiz edilecektir.
+              </p>
+            </div>
+          )}
           {insights.map((item) => {
             const isWarning = item.type === 'warning';
             const isSuccess = item.type === 'success';

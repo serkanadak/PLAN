@@ -59,14 +59,16 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
   const [resizingTaskId, setResizingTaskId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Time grid hours: 00:00 to 24:00 (24 hours)
-  const HOURS = Array.from({ length: 24 }, (_, i) => i);
+  // Time grid hours: 07:00 to 24:00 (17 hours: 07:00 through 23:59 / 24:00)
+  const START_HOUR = 7;
+  const END_HOUR = 24;
+  const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
   const HOUR_HEIGHT = 56; // 56px per hour
 
-  // Scroll to 08:00 AM on initial mount
+  // Scroll to 07:00 at the top on initial mount
   useEffect(() => {
     if (scrollContainerRef.current && (view === 'week' || view === 'day')) {
-      scrollContainerRef.current.scrollTop = 8 * HOUR_HEIGHT;
+      scrollContainerRef.current.scrollTop = 0;
     }
   }, [view]);
 
@@ -274,7 +276,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
               {/* Top-Left Corner: Frozen at BOTH Top and Left */}
               <div className="w-[72px] shrink-0 sticky left-0 top-0 z-40 bg-slate-100 p-2 border-r border-slate-200 text-center text-slate-500 font-mono text-[11px] flex flex-col justify-center shadow-[2px_0_4px_-1px_rgba(0,0,0,0.08)]">
                 <span>Saat</span>
-                <span className="text-[9px] text-slate-400">GMT+3</span>
+                <span className="text-[9px] text-slate-500 font-bold">07:00-24:00</span>
               </div>
               {weekDates.map((date, idx) => {
                 const iso = formatDateToISO(date);
@@ -345,6 +347,12 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                     {String(hour).padStart(2, '0')}:00
                   </div>
                 ))}
+                <div
+                  style={{ height: '24px' }}
+                  className="border-b border-slate-200 pr-2 pt-0.5 text-right text-[10px] font-mono text-slate-500 font-bold bg-slate-100/60"
+                >
+                  24:00
+                </div>
               </div>
 
               {/* 7 Day Columns: Exactly identical widths to header cells */}
@@ -385,13 +393,24 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                         </span>
                       </div>
                     ))}
+                    {/* Matching bottom cell for 24:00 marker */}
+                    <div style={{ height: '24px' }} className="border-b border-slate-200 bg-slate-50/30" />
 
                     {/* Scheduled Tasks Positioned Absolutely */}
                     {dayTasks.map((task) => {
                       const cfg = SUBJECT_CONFIGS[task.subjectId];
                       const startMins = timeStringToMinutes(task.startTime);
-                      const topPx = (startMins / 60) * HOUR_HEIGHT;
-                      const heightPx = Math.max(32, (task.durationMinutes / 60) * HOUR_HEIGHT);
+                      const endMins = startMins + task.durationMinutes;
+
+                      // Skip tasks completely outside 07:00 - 24:00
+                      if (endMins <= START_HOUR * 60 || startMins >= END_HOUR * 60) {
+                        return null;
+                      }
+
+                      const visibleStartMins = Math.max(START_HOUR * 60, startMins);
+                      const visibleEndMins = Math.min(END_HOUR * 60, endMins);
+                      const topPx = ((visibleStartMins - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+                      const heightPx = Math.max(28, ((visibleEndMins - visibleStartMins) / 60) * HOUR_HEIGHT);
 
                       return (
                         <div
@@ -521,6 +540,12 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                     {String(hour).padStart(2, '0')}:00
                   </div>
                 ))}
+                <div
+                  style={{ height: '28px' }}
+                  className="border-b border-slate-200 pr-3 pt-1 text-right text-xs font-mono text-slate-500 font-bold bg-slate-100/60"
+                >
+                  24:00
+                </div>
               </div>
 
               {/* Day Slot */}
@@ -540,10 +565,12 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                     className="border-b border-slate-100 hover:bg-blue-50/30 transition-colors cursor-pointer p-2 flex items-start"
                   >
                     <span className="text-[11px] text-slate-300 font-mono">
-                      {String(hour).padStart(2, '0')}:00 - {String(hour + 1).padStart(2, '0')}:00
+                      {String(hour).padStart(2, '0')}:00 - {String(hour + 1 === 24 ? 24 : hour + 1).padStart(2, '0')}:00
                     </span>
                   </div>
                 ))}
+                {/* Matching bottom cell for 24:00 marker */}
+                <div style={{ height: '28px' }} className="border-b border-slate-200 bg-slate-50/30" />
 
                 {/* Day Tasks */}
                 {tasks
@@ -551,8 +578,16 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                   .map((task) => {
                     const cfg = SUBJECT_CONFIGS[task.subjectId];
                     const startMins = timeStringToMinutes(task.startTime);
-                    const topPx = (startMins / 60) * (HOUR_HEIGHT * 1.2);
-                    const heightPx = Math.max(45, (task.durationMinutes / 60) * (HOUR_HEIGHT * 1.2));
+                    const endMins = startMins + task.durationMinutes;
+
+                    if (endMins <= START_HOUR * 60 || startMins >= END_HOUR * 60) {
+                      return null;
+                    }
+
+                    const visibleStartMins = Math.max(START_HOUR * 60, startMins);
+                    const visibleEndMins = Math.min(END_HOUR * 60, endMins);
+                    const topPx = ((visibleStartMins - START_HOUR * 60) / 60) * (HOUR_HEIGHT * 1.2);
+                    const heightPx = Math.max(40, ((visibleEndMins - visibleStartMins) / 60) * (HOUR_HEIGHT * 1.2));
 
                     return (
                       <div

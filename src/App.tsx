@@ -32,6 +32,7 @@ import {
   saveTasksToStorage,
   loadExamsFromStorage,
   saveExamsToStorage,
+  clearAllLocalData,
 } from './utils/storage';
 import {
   signInWithGoogle,
@@ -223,10 +224,16 @@ export default function App() {
     }
   };
 
-  // Reset to initial factory defaults
+  // Reset all tasks and mock exams to clean slate
   const handleResetToDefaults = () => {
-    setTasks(INITIAL_TASKS);
-    setMockExams(INITIAL_MOCK_EXAMS);
+    setTasks([]);
+    setMockExams([]);
+    saveTasksToStorage([]);
+    saveExamsToStorage([]);
+    clearAllLocalData();
+    if (user) {
+      uploadLocalDataToCloud(user.uid, [], []);
+    }
   };
 
   // Completed Topic IDs Set for visual strikethrough in curriculum

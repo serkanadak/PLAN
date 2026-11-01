@@ -792,6 +792,28 @@ export const MockExamsView: React.FC<MockExamsViewProps> = ({
         </div>
 
         <div className="space-y-3">
+          {exams.length === 0 && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-3 shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-800 text-sm">Henüz Kayıtlı Deneme Sınavı Yok</h4>
+                <p className="text-xs text-slate-500 max-w-md mt-1">
+                  Çözdüğünüz kurumsal veya genel deneme sınavlarının doğru, yanlış ve boş sayılarını girerek netlerinizi, LGS MEB puanınızı ve ders bazlı başarı yüzdelerinizi takip edebilirsiniz.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-2xs transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>İlk Deneme Sınavını Kaydet</span>
+              </button>
+            </div>
+          )}
+
           {exams.map((exam, idx) => {
             const isExpanded = expandedExamId === exam.id;
 

@@ -134,15 +134,9 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
   };
 
   const handleReset = () => {
-    if (
-      window.confirm(
-        'Tüm mevcut veriler sıfırlanıp ilk örnek plana döndürülecek. Devam etmek istiyor musunuz?'
-      )
-    ) {
-      onResetToDefaults();
-      setSuccessMessage('Veriler varsayılan başlangıç haline döndürüldü.');
-      setTimeout(() => setSuccessMessage(null), 4000);
-    }
+    onResetToDefaults();
+    setSuccessMessage('Tüm örnek görev ve hedef planlamaları kaldırıldı. Temiz bir başlangıç hazırlandı.');
+    setTimeout(() => setSuccessMessage(null), 4000);
   };
 
   return (
@@ -660,16 +654,16 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
                 </div>
               </div>
 
-              {/* Reset to factory default */}
+              {/* Reset to clean slate */}
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span>Varsayılan örnek ders ve soru verilerine dönmek isterseniz:</span>
+                <span>Tüm örnek görev ve hedef planlamalarını sıfırlamak isterseniz:</span>
                 <button
                   type="button"
                   onClick={handleReset}
                   className="cursor-pointer text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Varsayılana Sıfırla</span>
+                  <span>Tüm Görev ve Hedefleri Sıfırla (Temiz Sayfa)</span>
                 </button>
               </div>
             </div>

@@ -2,22 +2,23 @@ import { CalendarTask, MockExam } from '../types';
 import { INITIAL_TASKS } from '../data/initialTasks';
 import { INITIAL_MOCK_EXAMS } from '../data/mockExamsData';
 
-const TASKS_STORAGE_KEY = 'maarifplan_tasks_v1';
-const EXAMS_STORAGE_KEY = 'maarifplan_exams_v1';
+const TASKS_STORAGE_KEY = 'maarifplan_tasks_clean_v1';
+const EXAMS_STORAGE_KEY = 'maarifplan_exams_clean_v1';
 
 export function loadTasksFromStorage(): CalendarTask[] {
-  if (typeof window === 'undefined') return INITIAL_TASKS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(TASKS_STORAGE_KEY);
-    if (!raw) return INITIAL_TASKS;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
     }
+    // Clean up older keys that had dummy tasks
+    localStorage.removeItem('maarifplan_tasks_v1');
   } catch (err) {
     console.error('Failed to load tasks from localStorage', err);
   }
-  return INITIAL_TASKS;
+  return [];
 }
 
 export function saveTasksToStorage(tasks: CalendarTask[]): void {
@@ -30,18 +31,19 @@ export function saveTasksToStorage(tasks: CalendarTask[]): void {
 }
 
 export function loadExamsFromStorage(): MockExam[] {
-  if (typeof window === 'undefined') return INITIAL_MOCK_EXAMS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(EXAMS_STORAGE_KEY);
-    if (!raw) return INITIAL_MOCK_EXAMS;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
     }
+    // Clean up older keys that had dummy exams
+    localStorage.removeItem('maarifplan_exams_v1');
   } catch (err) {
     console.error('Failed to load exams from localStorage', err);
   }
-  return INITIAL_MOCK_EXAMS;
+  return [];
 }
 
 export function saveExamsToStorage(exams: MockExam[]): void {
@@ -50,6 +52,18 @@ export function saveExamsToStorage(exams: MockExam[]): void {
     localStorage.setItem(EXAMS_STORAGE_KEY, JSON.stringify(exams));
   } catch (err) {
     console.error('Failed to save exams to localStorage', err);
+  }
+}
+
+export function clearAllLocalData(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(TASKS_STORAGE_KEY);
+    localStorage.removeItem(EXAMS_STORAGE_KEY);
+    localStorage.removeItem('maarifplan_tasks_v1');
+    localStorage.removeItem('maarifplan_exams_v1');
+  } catch (err) {
+    console.error('Failed to clear local data', err);
   }
 }
 
