@@ -66,6 +66,7 @@ export interface CalendarTask {
   // Recurrence
   recurrence: RecurrenceType;
   recurrenceDayOfWeek?: number; // 0 = Sunday, 1 = Monday, etc.
+  recurrenceGroupId?: string; // Group ID to link recurring instances together
   
   // Goals & Actuals
   targetCount?: number; // Target questions or pages

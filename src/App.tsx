@@ -20,7 +20,7 @@ import { MockExamsView } from './components/Exams/MockExamsView';
 import { CurriculumExplorer } from './components/Curriculum/CurriculumExplorer';
 import { DataBackupModal } from './components/Storage/DataBackupModal';
 import { NotificationModal } from './components/Notifications/NotificationModal';
-import { formatDateToISO } from './utils/dateUtils';
+import { formatDateToISO, generateRecurringTasks } from './utils/dateUtils';
 import {
   NotificationSettings,
   loadNotificationSettings,
@@ -247,26 +247,54 @@ export default function App() {
     return set;
   }, [tasks]);
 
-  // Save or Update Task (Local + Cloud)
+  // Save or Update Task (Local + Cloud) with automatic recurring generation
   const handleSaveTask = (savedTask: CalendarTask) => {
-    setTasks((prev) => {
-      const exists = prev.some((t) => t.id === savedTask.id);
-      if (exists) {
-        return prev.map((t) => (t.id === savedTask.id ? savedTask : t));
-      }
-      return [...prev, savedTask];
-    });
+    if (savedTask.recurrence && savedTask.recurrence !== 'none') {
+      const generated = generateRecurringTasks(savedTask);
 
-    if (user) {
-      saveTaskToCloud(user.uid, savedTask);
+      setTasks((prev) => {
+        // If updating an existing recurring group, remove previous instances of this group
+        const targetGroupId = savedTask.recurrenceGroupId;
+        const cleaned = targetGroupId
+          ? prev.filter((t) => t.recurrenceGroupId !== targetGroupId && t.id !== savedTask.id)
+          : prev.filter((t) => t.id !== savedTask.id);
+
+        return [...cleaned, ...generated];
+      });
+
+      if (user) {
+        generated.forEach((t) => saveTaskToCloud(user.uid, t));
+      }
+    } else {
+      setTasks((prev) => {
+        const exists = prev.some((t) => t.id === savedTask.id);
+        if (exists) {
+          return prev.map((t) => (t.id === savedTask.id ? savedTask : t));
+        }
+        return [...prev, savedTask];
+      });
+
+      if (user) {
+        saveTaskToCloud(user.uid, savedTask);
+      }
     }
   };
 
   // Delete Task (Local + Cloud)
-  const handleDeleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== taskId));
-    if (user) {
-      deleteTaskFromCloud(user.uid, taskId);
+  const handleDeleteTask = (taskId: string, deleteAllRecurring: boolean = false) => {
+    const taskToDelete = tasks.find((t) => t.id === taskId);
+    if (deleteAllRecurring && taskToDelete?.recurrenceGroupId) {
+      const gId = taskToDelete.recurrenceGroupId;
+      const groupTasks = tasks.filter((t) => t.recurrenceGroupId === gId);
+      setTasks((prev) => prev.filter((t) => t.recurrenceGroupId !== gId));
+      if (user) {
+        groupTasks.forEach((t) => deleteTaskFromCloud(user.uid, t.id));
+      }
+    } else {
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      if (user) {
+        deleteTaskFromCloud(user.uid, taskId);
+      }
     }
   };
 
@@ -355,7 +383,13 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 flex flex-col gap-4">
+      <main
+        className={`flex-1 w-full mx-auto flex flex-col ${
+          activeTab === 'calendar'
+            ? 'max-w-full px-1.5 sm:px-3 py-1.5'
+            : 'max-w-7xl p-3 sm:p-5 lg:p-6 gap-4'
+        }`}
+      >
         {/* TAB 1: CALENDAR VIEW (Tam Genişlik Outlook Takvimi) */}
         {activeTab === 'calendar' && (
           <div className="w-full">

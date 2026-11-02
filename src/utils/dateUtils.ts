@@ -1,3 +1,5 @@
+import type { CalendarTask } from '../types';
+
 export const TURKISH_DAYS_SHORT = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 export const TURKISH_DAYS_FULL = [
   'Pazartesi',
@@ -111,4 +113,60 @@ export function calculateCountdown(targetDateStr: string) {
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
 
   return { days, hours, minutes, diff };
+}
+
+/**
+ * Automatically creates recurring task copies across future dates based on recurrence rule:
+ * - 'daily': creates task for each day for the next 4 weeks (28 days)
+ * - 'weekdays': creates task Monday-Friday for the next 4 weeks
+ * - 'weekly': creates task on the same weekday for the next 8 weeks
+ */
+export function generateRecurringTasks(baseTask: CalendarTask, repeatWeeks: number = 4): CalendarTask[] {
+  if (baseTask.recurrence === 'none') {
+    return [baseTask];
+  }
+
+  const groupId = baseTask.recurrenceGroupId || `rec-${Date.now()}`;
+  const startDate = parseISODate(baseTask.date);
+  const tasks: CalendarTask[] = [];
+
+  const totalDays = baseTask.recurrence === 'weekly' ? 8 * 7 : repeatWeeks * 7;
+
+  for (let offset = 0; offset < totalDays; offset++) {
+    const curDate = new Date(startDate);
+    curDate.setDate(startDate.getDate() + offset);
+    const dayOfWeek = curDate.getDay(); // 0 is Sunday, 1 is Monday...
+
+    let shouldInclude = false;
+
+    if (baseTask.recurrence === 'daily') {
+      shouldInclude = true;
+    } else if (baseTask.recurrence === 'weekdays') {
+      // Monday (1) to Friday (5)
+      shouldInclude = dayOfWeek >= 1 && dayOfWeek <= 5;
+    } else if (baseTask.recurrence === 'weekly') {
+      // Every 7 days
+      shouldInclude = offset % 7 === 0;
+    }
+
+    if (shouldInclude) {
+      const iso = formatDateToISO(curDate);
+      const isFirst = offset === 0;
+
+      tasks.push({
+        ...baseTask,
+        id: isFirst ? baseTask.id : `${groupId}-${iso}`,
+        date: iso,
+        recurrenceGroupId: groupId,
+        recurrenceDayOfWeek: dayOfWeek,
+        completed: isFirst ? baseTask.completed : false,
+        completedAt: isFirst ? baseTask.completedAt : undefined,
+        actualCount: isFirst ? baseTask.actualCount : 0,
+        correctCount: isFirst ? baseTask.correctCount : 0,
+        wrongCount: isFirst ? baseTask.wrongCount : 0,
+      });
+    }
+  }
+
+  return tasks;
 }

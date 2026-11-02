@@ -63,7 +63,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
   const START_HOUR = 7;
   const END_HOUR = 24;
   const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
-  const HOUR_HEIGHT = 56; // 56px per hour
+  const HOUR_HEIGHT = 44; // Compact 44px per hour so almost all 07:00-24:00 fits on screen!
 
   // Scroll to 07:00 at the top on initial mount
   useEffect(() => {
@@ -206,40 +206,40 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
   };
 
   return (
-    <div className="w-full bg-white border border-slate-200 rounded-2xl flex flex-col shadow-xs overflow-hidden">
-      {/* Calendar Top Control Bar */}
-      <div className="p-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70">
-        {/* Left: Navigation Buttons */}
-        <div className="flex items-center gap-2">
+    <div className="w-full bg-white border border-slate-200 rounded-xl flex flex-col shadow-xs overflow-hidden">
+      {/* Calendar Top Control Bar - Ultra Compact */}
+      <div className="px-3 py-1.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-slate-50/90">
+        {/* Left: Navigation Buttons & Compact Date */}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={goToToday}
-            className="cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs"
+            className="cursor-pointer px-2.5 py-1 text-[11px] font-semibold rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs"
           >
             Bugün
           </button>
-          <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
+          <div className="flex items-center bg-white border border-slate-200 rounded-md p-0.5 shadow-2xs">
             <button
               onClick={prevPeriod}
-              className="cursor-pointer p-1.5 hover:bg-slate-100 rounded text-slate-600"
+              className="cursor-pointer p-1 hover:bg-slate-100 rounded text-slate-600"
               title="Önceki"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={nextPeriod}
-              className="cursor-pointer p-1.5 hover:bg-slate-100 rounded text-slate-600"
+              className="cursor-pointer p-1 hover:bg-slate-100 rounded text-slate-600"
               title="Sonraki"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <h2 className="text-sm sm:text-base font-bold text-slate-900 ml-1">
+          <h2 className="text-xs sm:text-sm font-bold text-slate-800 ml-1">
             {getHeaderTitle()}
           </h2>
         </div>
 
-        {/* Right: View Switcher */}
-        <div className="flex items-center bg-slate-200/80 p-0.5 rounded-lg border border-slate-200 text-xs">
+        {/* Right: View Switcher - Compact Pills */}
+        <div className="flex items-center bg-slate-200/80 p-0.5 rounded-lg border border-slate-200 text-[11px]">
           {(['day', 'week', 'month', 'year'] as CalendarView[]).map((v) => {
             const labels: Record<CalendarView, string> = {
               day: 'Günlük',
@@ -251,7 +251,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`cursor-pointer px-3 py-1 font-semibold rounded-md transition-all ${
+                className={`cursor-pointer px-2.5 py-0.5 font-semibold rounded-md transition-all ${
                   view === v
                     ? 'bg-white text-blue-700 shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -268,15 +268,15 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
       {view === 'week' && (
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-auto relative bg-white min-h-[640px] max-h-[760px]"
+          className="flex-1 overflow-auto relative bg-white h-[calc(100vh-140px)] min-h-[580px]"
         >
-          <div className="min-w-[880px] w-full relative">
-            {/* Sticky Day Headers Row: Exact same column widths as body */}
-            <div className="grid grid-cols-[72px_repeat(7,minmax(0,1fr))] w-full sticky top-0 z-30 border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold text-xs shadow-xs">
+          <div className="min-w-[800px] w-full relative">
+            {/* Sticky Day Headers Row: Compact inline day and date */}
+            <div className="grid grid-cols-[60px_repeat(7,minmax(0,1fr))] w-full sticky top-0 z-30 border-b border-slate-200 bg-slate-50 text-slate-600 font-semibold text-xs shadow-xs">
               {/* Top-Left Corner: Frozen at BOTH Top and Left */}
-              <div className="w-[72px] shrink-0 sticky left-0 top-0 z-40 bg-slate-100 p-2 border-r border-slate-200 text-center text-slate-500 font-mono text-[11px] flex flex-col justify-center shadow-[2px_0_4px_-1px_rgba(0,0,0,0.08)]">
-                <span>Saat</span>
-                <span className="text-[9px] text-slate-500 font-bold">07:00-24:00</span>
+              <div className="w-[60px] shrink-0 sticky left-0 top-0 z-40 bg-slate-100 px-1 py-1 border-r border-slate-200 text-center text-slate-500 font-mono flex flex-col justify-center shadow-[2px_0_4px_-1px_rgba(0,0,0,0.08)]">
+                <span className="text-[10px] font-bold text-slate-600">Saat</span>
+                <span className="text-[8px] text-slate-400 font-semibold">07-24</span>
               </div>
               {weekDates.map((date, idx) => {
                 const iso = formatDateToISO(date);
@@ -290,32 +290,32 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                       onSelectedDateChange(date);
                       setView('day');
                     }}
-                    className={`min-w-0 w-full overflow-hidden cursor-pointer p-2 text-center border-r border-slate-200/80 transition-colors hover:bg-slate-100/80 flex flex-col items-center justify-between min-h-[68px] ${
+                    className={`min-w-0 w-full overflow-hidden cursor-pointer px-1 py-1 text-center border-r border-slate-200/80 transition-colors hover:bg-slate-100/80 flex flex-col items-center justify-center min-h-[40px] ${
                       isToday ? 'bg-blue-50/95 font-bold' : 'bg-slate-50'
                     }`}
                   >
-                    <div className="w-full truncate">
-                      <div className="text-[11px] text-slate-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-center gap-1.5 w-full">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
                         {TURKISH_DAYS_SHORT[idx]}
-                      </div>
-                      <div
-                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold mt-0.5 ${
+                      </span>
+                      <span
+                        className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold ${
                           isToday
                             ? 'bg-blue-600 text-white shadow-xs'
                             : 'text-slate-800'
                         }`}
                       >
                         {date.getDate()}
-                      </div>
+                      </span>
                     </div>
 
-                    {/* MEB Important Dates Pinned Badges Plotted Directly on Calendar Day Header */}
+                    {/* MEB Important Dates: Ultra-compact single line badge if any */}
                     {dayImportantDates.length > 0 && (
-                      <div className="w-full mt-1 space-y-0.5 px-0.5">
+                      <div className="w-full mt-0.5 px-0.5">
                         {dayImportantDates.map((imp) => (
                           <div
                             key={imp.id}
-                            className={`text-[9px] font-bold px-1 py-0.5 rounded leading-tight truncate text-center shadow-2xs block ${
+                            className={`text-[8px] font-bold px-1 py-0.2 rounded leading-none truncate text-center shadow-2xs block ${
                               imp.type === 'lgs'
                                 ? 'bg-purple-600 text-white'
                                 : imp.type === 'sinav'
@@ -334,22 +334,22 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
               })}
             </div>
 
-            {/* Time-Grid Body: Exact matching grid columns as header */}
-            <div className="grid grid-cols-[72px_repeat(7,minmax(0,1fr))] w-full relative">
+            {/* Time-Grid Body: Exact matching 60px grid columns as header */}
+            <div className="grid grid-cols-[60px_repeat(7,minmax(0,1fr))] w-full relative">
               {/* Hours Column: Frozen at Left on horizontal scroll */}
-              <div className="w-[72px] shrink-0 sticky left-0 z-20 bg-slate-50/95 backdrop-blur-xs border-r border-slate-200 select-none shadow-[2px_0_4px_-1px_rgba(0,0,0,0.08)]">
+              <div className="w-[60px] shrink-0 sticky left-0 z-20 bg-slate-50/95 backdrop-blur-xs border-r border-slate-200 select-none shadow-[2px_0_4px_-1px_rgba(0,0,0,0.08)]">
                 {HOURS.map((hour) => (
                   <div
                     key={hour}
                     style={{ height: `${HOUR_HEIGHT}px` }}
-                    className="border-b border-slate-200/60 pr-2 pt-1 text-right text-[11px] font-mono text-slate-400"
+                    className="border-b border-slate-200/60 pr-1.5 pt-0.5 text-right text-[10px] font-mono text-slate-400"
                   >
                     {String(hour).padStart(2, '0')}:00
                   </div>
                 ))}
                 <div
-                  style={{ height: '24px' }}
-                  className="border-b border-slate-200 pr-2 pt-0.5 text-right text-[10px] font-mono text-slate-500 font-bold bg-slate-100/60"
+                  style={{ height: '22px' }}
+                  className="border-b border-slate-200 pr-1.5 pt-0.5 text-right text-[9px] font-mono text-slate-500 font-bold bg-slate-100/60"
                 >
                   24:00
                 </div>
@@ -394,7 +394,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                       </div>
                     ))}
                     {/* Matching bottom cell for 24:00 marker */}
-                    <div style={{ height: '24px' }} className="border-b border-slate-200 bg-slate-50/30" />
+                    <div style={{ height: '22px' }} className="border-b border-slate-200 bg-slate-50/30" />
 
                     {/* Scheduled Tasks Positioned Absolutely */}
                     {dayTasks.map((task) => {
@@ -410,7 +410,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                       const visibleStartMins = Math.max(START_HOUR * 60, startMins);
                       const visibleEndMins = Math.min(END_HOUR * 60, endMins);
                       const topPx = ((visibleStartMins - START_HOUR * 60) / 60) * HOUR_HEIGHT;
-                      const heightPx = Math.max(28, ((visibleEndMins - visibleStartMins) / 60) * HOUR_HEIGHT);
+                      const heightPx = Math.max(22, ((visibleEndMins - visibleStartMins) / 60) * HOUR_HEIGHT);
 
                       return (
                         <div
@@ -424,10 +424,10 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                           style={{
                             top: `${topPx}px`,
                             height: `${heightPx}px`,
-                            left: '3px',
-                            right: '3px',
+                            left: '2px',
+                            right: '2px',
                           }}
-                          className={`absolute z-10 rounded-lg p-2 border text-xs shadow-2xs hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col justify-between ${
+                          className={`absolute z-10 rounded-md p-1.5 border text-[11px] shadow-2xs hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col justify-between ${
                             cfg?.themeColor.cardBg || 'bg-slate-100 border-slate-300'
                           } ${task.completed ? 'ring-1 ring-emerald-500/50' : ''}`}
                         >
@@ -439,29 +439,29 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                               </span>
                               {task.completed ? (
                                 <span className="bg-emerald-500 text-white rounded-full p-0.5 shrink-0" title="Tamamlandı">
-                                  <CheckCircle2 className="w-3 h-3" />
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
                                 </span>
                               ) : task.recurrence !== 'none' ? (
                                 <span title="Tekrarlayan">
-                                  <Repeat className="w-3 h-3 text-slate-400 shrink-0" />
+                                  <Repeat className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                                 </span>
                               ) : null}
                             </div>
 
                             {task.customActivityName && (
-                              <p className="text-[10px] font-medium text-slate-700 bg-black/5 px-1 rounded truncate leading-tight mb-0.5">
+                              <p className="text-[9px] font-medium text-slate-700 bg-black/5 px-1 rounded truncate leading-tight mb-0.5">
                                 {task.customActivityName}
                               </p>
                             )}
 
-                            {task.topicName && heightPx > 42 && (
-                              <p className="text-[10px] opacity-75 truncate leading-tight">
+                            {task.topicName && heightPx > 36 && (
+                              <p className="text-[9px] opacity-75 truncate leading-tight">
                                 {task.topicName}
                               </p>
                             )}
                           </div>
 
-                          <div className="flex items-center justify-between text-[10px] opacity-90 pt-0.5 border-t border-black/5 mt-0.5">
+                          <div className="flex items-center justify-between text-[9px] opacity-90 pt-0.5 border-t border-black/5 mt-0.5">
                             <span className="font-mono flex items-center gap-0.5">
                               <Clock className="w-2.5 h-2.5" />
                               {task.startTime} ({formatDuration(task.durationMinutes)})
@@ -479,10 +479,10 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                           {/* Bottom Resize Handle */}
                           <div
                             onMouseDown={(e) => handleResizeStart(e, task)}
-                            className="cursor-ns-resize absolute bottom-0 left-0 right-0 h-2 bg-transparent hover:bg-black/10 flex items-center justify-center group/resize"
+                            className="cursor-ns-resize absolute bottom-0 left-0 right-0 h-1.5 bg-transparent hover:bg-black/10 flex items-center justify-center group/resize"
                             title="Süreyi uzatmak veya kısaltmak için aşağı/yukarı sürükleyin"
                           >
-                            <div className="w-6 h-0.5 bg-black/20 group-hover/resize:bg-blue-600 rounded-full" />
+                            <div className="w-5 h-0.5 bg-black/20 group-hover/resize:bg-blue-600 rounded-full" />
                           </div>
                         </div>
                       );
@@ -497,7 +497,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
 
       {/* VIEW: DAILY (Detailed Single Day View with Inset Milestones) */}
       {view === 'day' && (
-        <div className="flex-1 flex flex-col min-h-[640px] overflow-hidden">
+        <div className="flex-1 flex flex-col h-[calc(100vh-140px)] min-h-[580px] overflow-hidden">
           {/* Day top notification if it falls on an exam or holiday */}
           {(() => {
             const dateStr = formatDateToISO(selectedDate);
@@ -505,44 +505,44 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
             if (imps.length === 0) return null;
 
             return (
-              <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white px-4 py-2 flex items-center justify-between text-xs border-b border-slate-800">
+              <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white px-3 py-1 flex items-center justify-between text-[11px] border-b border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Flag className="w-4 h-4 text-amber-400" />
+                  <Flag className="w-3.5 h-3.5 text-amber-400" />
                   <span className="font-bold text-amber-300">MEB Takvim Uyarısı:</span>
                   <span>{imps.map((i) => `${i.title} (${i.description})`).join(' | ')}</span>
                 </div>
-                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded font-mono">
+                <span className="text-[9px] bg-white/10 px-1.5 py-0.2 rounded font-mono">
                   Aktif Dönem
                 </span>
               </div>
             );
           })()}
 
-          <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700">
+          <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-700">
               {TURKISH_DAYS_FULL[selectedDate.getDay() === 0 ? 6 : selectedDate.getDay() - 1]} Odak Çizelgesi
             </span>
-            <span className="text-xs text-slate-500">
+            <span className="text-slate-500 font-mono text-[11px]">
               {tasks.filter((t) => t.date === formatDateToISO(selectedDate)).length} Planlanmış Görev
             </span>
           </div>
 
           <div ref={scrollContainerRef} className="flex-1 overflow-auto bg-white">
-            <div className="grid grid-cols-[80px_1fr] relative min-w-[500px]">
+            <div className="grid grid-cols-[60px_1fr] relative min-w-[450px]">
               {/* Hours: Sticky on the left */}
               <div className="sticky left-0 z-20 border-r border-slate-200 bg-slate-50/95 backdrop-blur-xs select-none shadow-[2px_0_4px_-1px_rgba(0,0,0,0.08)]">
                 {HOURS.map((hour) => (
                   <div
                     key={hour}
-                    style={{ height: `${HOUR_HEIGHT * 1.2}px` }}
-                    className="border-b border-slate-200/60 pr-3 pt-2 text-right text-xs font-mono text-slate-400"
+                    style={{ height: `${HOUR_HEIGHT}px` }}
+                    className="border-b border-slate-200/60 pr-1.5 pt-0.5 text-right text-[10px] font-mono text-slate-400"
                   >
                     {String(hour).padStart(2, '0')}:00
                   </div>
                 ))}
                 <div
-                  style={{ height: '28px' }}
-                  className="border-b border-slate-200 pr-3 pt-1 text-right text-xs font-mono text-slate-500 font-bold bg-slate-100/60"
+                  style={{ height: '22px' }}
+                  className="border-b border-slate-200 pr-1.5 pt-0.5 text-right text-[9px] font-mono text-slate-500 font-bold bg-slate-100/60"
                 >
                   24:00
                 </div>
@@ -553,7 +553,7 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                 {HOURS.map((hour) => (
                   <div
                     key={hour}
-                    style={{ height: `${HOUR_HEIGHT * 1.2}px` }}
+                    style={{ height: `${HOUR_HEIGHT}px` }}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleSlotDrop(e, formatDateToISO(selectedDate), hour)}
                     onClick={() =>
@@ -562,15 +562,15 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                         `${String(hour).padStart(2, '0')}:00`
                       )
                     }
-                    className="border-b border-slate-100 hover:bg-blue-50/30 transition-colors cursor-pointer p-2 flex items-start"
+                    className="border-b border-slate-100 hover:bg-blue-50/30 transition-colors cursor-pointer px-2 py-1 flex items-start"
                   >
-                    <span className="text-[11px] text-slate-300 font-mono">
+                    <span className="text-[10px] text-slate-300 font-mono">
                       {String(hour).padStart(2, '0')}:00 - {String(hour + 1 === 24 ? 24 : hour + 1).padStart(2, '0')}:00
                     </span>
                   </div>
                 ))}
                 {/* Matching bottom cell for 24:00 marker */}
-                <div style={{ height: '28px' }} className="border-b border-slate-200 bg-slate-50/30" />
+                <div style={{ height: '22px' }} className="border-b border-slate-200 bg-slate-50/30" />
 
                 {/* Day Tasks */}
                 {tasks
@@ -586,8 +586,8 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
 
                     const visibleStartMins = Math.max(START_HOUR * 60, startMins);
                     const visibleEndMins = Math.min(END_HOUR * 60, endMins);
-                    const topPx = ((visibleStartMins - START_HOUR * 60) / 60) * (HOUR_HEIGHT * 1.2);
-                    const heightPx = Math.max(40, ((visibleEndMins - visibleStartMins) / 60) * (HOUR_HEIGHT * 1.2));
+                    const topPx = ((visibleStartMins - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+                    const heightPx = Math.max(30, ((visibleEndMins - visibleStartMins) / 60) * HOUR_HEIGHT);
 
                     return (
                       <div
@@ -601,8 +601,8 @@ export const OutlookCalendar: React.FC<OutlookCalendarProps> = ({
                         style={{
                           top: `${topPx}px`,
                           height: `${heightPx}px`,
-                          left: '12px',
-                          right: '12px',
+                          left: '4px',
+                          right: '4px',
                         }}
                         className={`absolute z-10 rounded-xl p-3 border shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between ${
                           cfg?.themeColor.cardBg || 'bg-slate-100 border-slate-300'

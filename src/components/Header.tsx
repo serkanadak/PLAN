@@ -88,9 +88,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Main navigation header - compact h-13 with persistent Cloud/Auth button */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-13 gap-2 sm:gap-4">
+      {/* Main navigation header - sleek compact bar */}
+      <div className={`w-full mx-auto px-2 sm:px-4 ${activeTab === 'calendar' ? 'max-w-full' : 'max-w-7xl'}`}>
+        <div className="flex items-center justify-between h-11 sm:h-12 gap-2 sm:gap-3">
           {/* Left: Brand Logo & Grade Pills */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Brand Logo */}

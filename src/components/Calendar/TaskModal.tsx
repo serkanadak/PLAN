@@ -23,7 +23,7 @@ interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveTask: (task: CalendarTask) => void;
-  onDeleteTask?: (taskId: string) => void;
+  onDeleteTask?: (taskId: string, deleteAllRecurring?: boolean) => void;
   initialTask?: Partial<CalendarTask> | null;
   currentGrade: Grade;
 }
@@ -169,6 +169,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       startTime,
       durationMinutes,
       recurrence,
+      recurrenceGroupId: initialTask?.recurrenceGroupId,
       targetCount: (taskType === 'soru' || taskType === 'kitap' || taskType === 'deneme') && targetCount ? Number(targetCount) : undefined,
       actualCount: completed ? Number(actualCount) : Number(actualCount) || 0,
       correctCount: Number(correctCount) || 0,
@@ -435,15 +436,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </div>
             </div>
 
-            {/* Row 4: Zamanlama & Döngü (4 sütun tek satırda yan yana!) */}
-            <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
+            {/* Row 4: Zamanlama (Tarih, Saat, Süre) */}
+            <div className="grid grid-cols-3 gap-1 sm:gap-2">
               <div>
                 <label className="block text-[10px] font-bold text-slate-600 mb-0.5 truncate">Tarih</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-1 py-0.5 rounded-lg border border-slate-300 font-mono text-slate-800 text-[11px] h-7 sm:h-8"
+                  className="w-full px-2 py-0.5 rounded-lg border border-slate-300 font-mono text-slate-800 text-[11px] h-7 sm:h-8"
                 />
               </div>
 
@@ -453,7 +454,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-1 py-0.5 rounded-lg border border-slate-300 font-mono text-slate-800 text-[11px] h-7 sm:h-8"
+                  className="w-full px-2 py-0.5 rounded-lg border border-slate-300 font-mono text-slate-800 text-[11px] h-7 sm:h-8"
                 />
               </div>
 
@@ -462,7 +463,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 <select
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                  className="w-full px-1 py-0.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-800 text-[11px] h-7 sm:h-8"
+                  className="w-full px-1.5 py-0.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-800 text-[11px] h-7 sm:h-8"
                 >
                   <option value={30}>30 dk</option>
                   <option value={45}>45 dk</option>
@@ -473,20 +474,54 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   <option value={135}>135 dk (Deneme)</option>
                 </select>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-600 mb-0.5 truncate">Tekrar</label>
-                <select
-                  value={recurrence}
-                  onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
-                  className="w-full px-1 py-0.5 rounded-lg border border-slate-300 bg-white font-medium text-slate-800 text-[11px] h-7 sm:h-8"
-                >
-                  <option value="none">Tek sefer</option>
-                  <option value="weekly">Haftalık</option>
-                  <option value="weekdays">Hafta içi</option>
-                  <option value="daily">Her gün</option>
-                </select>
+            {/* Row 4.5: Tekrar Segmesi (Segmented Control Buttons) */}
+            <div>
+              <div className="flex items-center justify-between mb-0.5">
+                <label className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
+                  <Repeat className="w-3 h-3 text-blue-600" />
+                  Tekrar Segmesi
+                </label>
+                {recurrence !== 'none' && (
+                  <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.2 rounded">
+                    Takvime otomatik kopyalanır
+                  </span>
+                )}
               </div>
+
+              <div className="grid grid-cols-4 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 h-7 sm:h-8">
+                {[
+                  { value: 'none', label: 'Tek Sefer' },
+                  { value: 'daily', label: 'Her Gün' },
+                  { value: 'weekdays', label: 'Hafta İçi' },
+                  { value: 'weekly', label: 'Haftalık' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRecurrence(opt.value as RecurrenceType)}
+                    className={`cursor-pointer px-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center truncate ${
+                      recurrence === opt.value
+                        ? 'bg-white text-blue-700 shadow-2xs border border-slate-200 font-bold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {recurrence !== 'none' && (
+                <p className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-md mt-1 flex items-center gap-1.5 leading-tight">
+                  <Sparkles className="w-3 h-3 text-blue-600 shrink-0" />
+                  <span>
+                    {recurrence === 'daily' && 'Seçilen saatte 4 hafta boyunca her gün takviminize otomatik eklenecektir.'}
+                    {recurrence === 'weekdays' && 'Pazartesi - Cuma günleri arasında takviminize otomatik eklenecektir.'}
+                    {recurrence === 'weekly' && 'Her hafta aynı günde 8 hafta boyunca takviminize otomatik eklenecektir.'}
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Row 5: Hızlı Tamamlama & Çalışma Notu (Tek Kompakt Satırda!) */}
@@ -558,19 +593,35 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           {/* Fixed Modal Footer - Always in view, never hidden behind screen bottom! */}
           <div className="px-3.5 py-1.5 sm:py-2 border-t border-slate-100 flex items-center justify-between gap-2 bg-slate-50/80 shrink-0">
             {initialTask?.id && onDeleteTask ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Bu görevi silmek istediğinize emin misiniz?')) {
-                    onDeleteTask(initialTask.id!);
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDeleteTask(initialTask.id!, false);
                     onClose();
-                  }
-                }}
-                className="cursor-pointer px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 rounded-md flex items-center gap-1 transition-colors"
-              >
-                <Trash2 className="w-3 h-3" />
-                Sil
-              </button>
+                  }}
+                  className="cursor-pointer px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 rounded-md flex items-center gap-1 transition-colors"
+                  title="Sadece seçili gündeki görevi siler"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  {initialTask.recurrenceGroupId ? 'Bu Günü Sil' : 'Sil'}
+                </button>
+
+                {initialTask.recurrenceGroupId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteTask(initialTask.id!, true);
+                      onClose();
+                    }}
+                    className="cursor-pointer px-2 py-1 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md flex items-center gap-1 transition-colors"
+                    title="Tüm tekrarlayan görevleri takvimden siler"
+                  >
+                    <Repeat className="w-3 h-3" />
+                    Tüm Tekrarları Sil
+                  </button>
+                )}
+              </div>
             ) : (
               <div />
             )}
