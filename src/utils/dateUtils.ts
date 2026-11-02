@@ -117,22 +117,24 @@ export function calculateCountdown(targetDateStr: string) {
 
 /**
  * Automatically creates recurring task copies across future dates based on recurrence rule:
- * - 'daily': creates task for each day for the next 4 weeks (28 days)
- * - 'weekdays': creates task Monday-Friday for the next 4 weeks
- * - 'weekly': creates task on the same weekday for the next 8 weeks
+ * - 'daily': creates task for each day for the specified count (default 7 days)
+ * - 'weekdays': creates task Monday-Friday for the specified count (default 10 days)
+ * - 'weekly': creates task on the same weekday for the specified count (default 4 weeks)
  */
-export function generateRecurringTasks(baseTask: CalendarTask, repeatWeeks: number = 4): CalendarTask[] {
+export function generateRecurringTasks(baseTask: CalendarTask, customCount?: number): CalendarTask[] {
   if (baseTask.recurrence === 'none') {
     return [baseTask];
   }
 
+  const defaultCount = baseTask.recurrence === 'weekly' ? 4 : baseTask.recurrence === 'weekdays' ? 10 : 7;
+  const targetCount = Math.max(1, Math.min(60, customCount || baseTask.recurrenceCount || defaultCount));
   const groupId = baseTask.recurrenceGroupId || `rec-${Date.now()}`;
   const startDate = parseISODate(baseTask.date);
   const tasks: CalendarTask[] = [];
 
-  const totalDays = baseTask.recurrence === 'weekly' ? 8 * 7 : repeatWeeks * 7;
-
-  for (let offset = 0; offset < totalDays; offset++) {
+  let offset = 0;
+  // Offset incremented until exactly targetCount occurrences are collected
+  while (tasks.length < targetCount && offset < 400) {
     const curDate = new Date(startDate);
     curDate.setDate(startDate.getDate() + offset);
     const dayOfWeek = curDate.getDay(); // 0 is Sunday, 1 is Monday...
@@ -151,13 +153,14 @@ export function generateRecurringTasks(baseTask: CalendarTask, repeatWeeks: numb
 
     if (shouldInclude) {
       const iso = formatDateToISO(curDate);
-      const isFirst = offset === 0;
+      const isFirst = tasks.length === 0;
 
       tasks.push({
         ...baseTask,
         id: isFirst ? baseTask.id : `${groupId}-${iso}`,
         date: iso,
         recurrenceGroupId: groupId,
+        recurrenceCount: targetCount,
         recurrenceDayOfWeek: dayOfWeek,
         completed: isFirst ? baseTask.completed : false,
         completedAt: isFirst ? baseTask.completedAt : undefined,
@@ -166,6 +169,8 @@ export function generateRecurringTasks(baseTask: CalendarTask, repeatWeeks: numb
         wrongCount: isFirst ? baseTask.wrongCount : 0,
       });
     }
+
+    offset++;
   }
 
   return tasks;

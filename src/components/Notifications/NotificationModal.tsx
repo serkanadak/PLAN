@@ -41,6 +41,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   });
   const [testSent, setTestSent] = useState(false);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [activeGuideTab, setActiveGuideTab] = useState<'chrome' | 'ios-safari' | 'mac-safari'>('chrome');
 
   if (!isOpen) return null;
 
@@ -252,6 +253,121 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             </button>
           </div>
 
+          {/* Step-by-Step Browser Permission Guide (Chrome & Safari) */}
+          <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                Chrome ve Safari&apos;de Bildirim İznini Açma Rehberi
+              </span>
+              <span className="text-[10px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded font-semibold">
+                Çözüm Yolları
+              </span>
+            </div>
+
+            {/* Guide Tabs */}
+            <div className="grid grid-cols-3 gap-1 bg-white p-1 rounded-lg border border-slate-200">
+              {[
+                { id: 'chrome', label: '🌐 Chrome' },
+                { id: 'ios-safari', label: '📱 iPhone (Safari)' },
+                { id: 'mac-safari', label: '💻 Mac (Safari)' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveGuideTab(tab.id as 'chrome' | 'ios-safari' | 'mac-safari')}
+                  className={`cursor-pointer py-1 px-1.5 rounded-md text-[11px] font-bold transition-all text-center truncate ${
+                    activeGuideTab === tab.id
+                      ? 'bg-blue-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab 1: Google Chrome */}
+            {activeGuideTab === 'chrome' && (
+              <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2 text-[11px] text-slate-700 animate-in fade-in duration-150">
+                <p className="font-bold text-slate-900 flex items-center gap-1">
+                  <span>Google Chrome&apos;da Bildirim İzni Verme:</span>
+                </p>
+                <ol className="list-decimal list-inside space-y-1.5 pl-0.5 text-slate-600">
+                  <li>
+                    Tarayıcının üst kısmında web adresinin (URL) hemen solundaki{' '}
+                    <strong className="text-slate-900">ayar / kilit simgesine (🎛️ veya 🔒)</strong> tıklayın.
+                  </li>
+                  <li>
+                    Açılan küçük pencerede <strong className="text-slate-900">&quot;Site ayarları&quot;</strong> veya{' '}
+                    <strong className="text-slate-900">&quot;Bildirimler&quot;</strong> satırını bulun.
+                  </li>
+                  <li>
+                    Seçeneği <strong className="text-emerald-700 font-bold">&quot;İzin Ver&quot; (Allow)</strong> olarak değiştirin.
+                  </li>
+                  <li>
+                    Sayfayı bir kez yenileyin (F5 veya Yenile düğmesi). Artık ders vaktiniz geldiğinde anlık masaüstü uyarısı alacaksınız!
+                  </li>
+                </ol>
+              </div>
+            )}
+
+            {/* Tab 2: iPhone & iPad Safari */}
+            {activeGuideTab === 'ios-safari' && (
+              <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2 text-[11px] text-slate-700 animate-in fade-in duration-150">
+                <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 font-medium text-[11px] leading-snug">
+                  ⚠️ <strong>Apple Güvenlik Kuralı:</strong> iPhone ve iPad&apos;lerde Safari sekmesinde web bildirimlerine izin verilemez. Apple, bildirimin çalışabilmesi için web uygulamasının Ana Ekrana eklenmesini şart koşar.
+                </div>
+                <p className="font-bold text-slate-900">iPhone / iPad&apos;de Bildirimi Açma Adımları (3 Kolay Adım):</p>
+                <ol className="list-decimal list-inside space-y-1.5 pl-0.5 text-slate-600">
+                  <li>
+                    Safari ekranının altındaki <strong className="text-slate-900">Paylaş (⬆️ kare içinden yukarı ok çıkan simge)</strong> düğmesine dokunun.
+                  </li>
+                  <li>
+                    Aşağı kaydırıp <strong className="text-slate-900">&quot;Ana Ekrana Ekle&quot; (Add to Home Screen)</strong> seçeneğine tıklayın ve sağ üstteki <strong>&quot;Ekle&quot;</strong> butonuna basın.
+                  </li>
+                  <li>
+                    Telefonunuzun ana ekranında beliren <strong className="text-blue-700 font-bold">MaarifPlan</strong> uygulama simgesine dokunarak açın.
+                  </li>
+                  <li>
+                    Uygulama açılınca bu bildirim penceresindeki <strong className="text-slate-900">&quot;Bildirim İzni Ver&quot;</strong> butonuna dokunun. Karşınıza Apple&apos;ın onay penceresi çıkacaktır; <strong className="text-emerald-700 font-bold">&quot;İzin Ver&quot;</strong> deyin!
+                  </li>
+                </ol>
+              </div>
+            )}
+
+            {/* Tab 3: Mac Safari */}
+            {activeGuideTab === 'mac-safari' && (
+              <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2 text-[11px] text-slate-700 animate-in fade-in duration-150">
+                <p className="font-bold text-slate-900">Mac Bilgisayarda Safari Bildirimlerini Açma:</p>
+                <ol className="list-decimal list-inside space-y-1.5 pl-0.5 text-slate-600">
+                  <li>
+                    Ekranın sol üst köşesindeki <strong className="text-slate-900">Safari</strong> menüsüne tıklayın ve{' '}
+                    <strong className="text-slate-900">&quot;Ayarlar...&quot; (Settings)</strong> seçin.
+                  </li>
+                  <li>
+                    Üst menüdeki <strong className="text-slate-900">&quot;Web Siteleri&quot; (Websites)</strong> sekmesine tıklayın.
+                  </li>
+                  <li>
+                    Sol sütundaki menüden <strong className="text-slate-900">&quot;Bildirimler&quot; (Notifications)</strong> seçeneğini seçin.
+                  </li>
+                  <li>
+                    Sağ listede MaarifPlan web sitesini bulun ve yanındaki açılır menüden{' '}
+                    <strong className="text-emerald-700 font-bold">&quot;İzin Ver&quot; (Allow)</strong> seçeneğini işaretleyin.
+                  </li>
+                </ol>
+              </div>
+            )}
+
+            {/* In-app sound note */}
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-[11px]">
+              <Volume2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>
+                <strong>Dahili Sesli Uyarı Garantisi:</strong> Tarayıcı izinlerini açmasanız bile, bu sekme arka planda açık kaldığında çalışma saatlerinizde hoş bir ses melodisi (chime) çalarak sizi uyaracaktır.
+              </span>
+            </div>
+          </div>
+
           {/* Direct Links & Home Screen Installation Section */}
           <div className="space-y-2.5 pt-2 border-t border-slate-200">
             <div className="flex items-center gap-1.5">
@@ -330,19 +446,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                   <span>Aç</span>
                 </a>
               </div>
-            </div>
-
-            {/* Chrome Ana Ekrana Ekleme Adımları */}
-            <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl space-y-1.5 text-amber-900 text-[11px]">
-              <p className="font-bold flex items-center gap-1">
-                <span>📱 Chrome ile Ana Ekrana Ekleme Adımları:</span>
-              </p>
-              <ol className="list-decimal list-inside space-y-1 pl-1 text-amber-800">
-                <li>Yukarıdaki linklerden birini Chrome&apos;da yeni sekmede açın.</li>
-                <li>Chrome adres çubuğunun sağındaki <strong>üç noktaya (⋮)</strong> tıklayın.</li>
-                <li><strong>&quot;Kaydet ve Paylaş&quot;</strong> &rarr; <strong>&quot;Uygulama olarak yükle&quot;</strong> veya <strong>&quot;Ana ekrana ekle&quot;</strong> seçeneğine tıklayın.</li>
-                <li>Artık uygulama telefonunuzun veya masaüstünüzün ana ekranında bir uygulama simgesi olarak açılacaktır!</li>
-              </ol>
             </div>
           </div>
         </div>

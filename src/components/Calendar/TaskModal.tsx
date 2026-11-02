@@ -58,6 +58,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [startTime, setStartTime] = useState<string>('17:00');
   const [durationMinutes, setDurationMinutes] = useState<number>(60);
   const [recurrence, setRecurrence] = useState<RecurrenceType>('none');
+  const [recurrenceCount, setRecurrenceCount] = useState<number>(7);
   const [targetCount, setTargetCount] = useState<number>(40);
   const [actualCount, setActualCount] = useState<number>(0);
   const [correctCount, setCorrectCount] = useState<number>(0);
@@ -79,6 +80,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setStartTime(initialTask.startTime || '17:00');
       setDurationMinutes(initialTask.durationMinutes || 60);
       setRecurrence(initialTask.recurrence || 'none');
+      setRecurrenceCount(
+        initialTask.recurrenceCount ||
+          (initialTask.recurrence === 'weekly' ? 4 : initialTask.recurrence === 'weekdays' ? 10 : 7)
+      );
       setTargetCount(initialTask.targetCount || (initialTask.taskType === 'kitap' ? 30 : 40));
       setActualCount(initialTask.actualCount || 0);
       setCorrectCount(initialTask.correctCount || 0);
@@ -99,6 +104,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setStartTime('17:00');
       setDurationMinutes(60);
       setRecurrence('none');
+      setRecurrenceCount(7);
       setTargetCount(40);
       setActualCount(0);
       setCorrectCount(0);
@@ -170,6 +176,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       durationMinutes,
       recurrence,
       recurrenceGroupId: initialTask?.recurrenceGroupId,
+      recurrenceCount: recurrence !== 'none' ? Number(recurrenceCount) : undefined,
       targetCount: (taskType === 'soru' || taskType === 'kitap' || taskType === 'deneme') && targetCount ? Number(targetCount) : undefined,
       actualCount: completed ? Number(actualCount) : Number(actualCount) || 0,
       correctCount: Number(correctCount) || 0,
@@ -476,35 +483,42 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </div>
             </div>
 
-            {/* Row 4.5: Tekrar Segmesi (Segmented Control Buttons) */}
-            <div>
-              <div className="flex items-center justify-between mb-0.5">
-                <label className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
-                  <Repeat className="w-3 h-3 text-blue-600" />
-                  Tekrar Segmesi
+            {/* Row 4.5: Tekrar Segmesi (Segmented Control Buttons + Tekrar Sayısı) */}
+            <div className="space-y-1.5 p-2 rounded-xl bg-slate-50/80 border border-slate-200">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
+                  <Repeat className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Tekrar Seçenekleri</span>
                 </label>
                 {recurrence !== 'none' && (
-                  <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.2 rounded">
-                    Takvime otomatik kopyalanır
+                  <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                    {recurrenceCount} Kez Tekrarlanacak
                   </span>
                 )}
               </div>
 
-              <div className="grid grid-cols-4 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 h-7 sm:h-8">
+              {/* Segmented type buttons */}
+              <div className="grid grid-cols-4 gap-1 bg-white p-0.5 rounded-lg border border-slate-200 h-7 sm:h-8">
                 {[
-                  { value: 'none', label: 'Tek Sefer' },
-                  { value: 'daily', label: 'Her Gün' },
-                  { value: 'weekdays', label: 'Hafta İçi' },
-                  { value: 'weekly', label: 'Haftalık' },
+                  { value: 'none', label: 'Tek Sefer', defaultCount: 1 },
+                  { value: 'daily', label: 'Her Gün', defaultCount: 7 },
+                  { value: 'weekdays', label: 'Hafta İçi', defaultCount: 10 },
+                  { value: 'weekly', label: 'Haftalık', defaultCount: 4 },
                 ].map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setRecurrence(opt.value as RecurrenceType)}
+                    onClick={() => {
+                      const nextRec = opt.value as RecurrenceType;
+                      setRecurrence(nextRec);
+                      if (nextRec !== 'none' && (!recurrenceCount || recurrenceCount === 1)) {
+                        setRecurrenceCount(opt.defaultCount);
+                      }
+                    }}
                     className={`cursor-pointer px-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center truncate ${
                       recurrence === opt.value
-                        ? 'bg-white text-blue-700 shadow-2xs border border-slate-200 font-bold'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-blue-600 text-white shadow-xs font-bold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
                     {opt.label}
@@ -512,15 +526,84 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 ))}
               </div>
 
+              {/* Sub-block: When recurring, specify exact recurrence count */}
               {recurrence !== 'none' && (
-                <p className="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-md mt-1 flex items-center gap-1.5 leading-tight">
-                  <Sparkles className="w-3 h-3 text-blue-600 shrink-0" />
-                  <span>
-                    {recurrence === 'daily' && 'Seçilen saatte 4 hafta boyunca her gün takviminize otomatik eklenecektir.'}
-                    {recurrence === 'weekdays' && 'Pazartesi - Cuma günleri arasında takviminize otomatik eklenecektir.'}
-                    {recurrence === 'weekly' && 'Her hafta aynı günde 8 hafta boyunca takviminize otomatik eklenecektir.'}
-                  </span>
-                </p>
+                <div className="pt-1.5 border-t border-slate-200/80 space-y-1.5 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold text-slate-700">
+                      {recurrence === 'daily'
+                        ? 'Kaç Gün Tekrarlansın?'
+                        : recurrence === 'weekdays'
+                        ? 'Kaç Hafta İçi Günü Tekrarlansın?'
+                        : 'Kaç Hafta Tekrarlansın?'}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min="2"
+                        max="60"
+                        value={recurrenceCount}
+                        onChange={(e) => setRecurrenceCount(Math.max(1, Math.min(60, Number(e.target.value))))}
+                        className="w-14 px-1.5 py-0.5 rounded-md border border-blue-400 bg-white font-mono font-bold text-blue-800 text-center text-xs h-6.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                      <span className="text-[10px] font-bold text-slate-500">
+                        {recurrence === 'weekly' ? 'hafta' : 'tekrar'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Fast selection chips */}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span className="text-[9px] text-slate-400 font-medium">Hızlı:</span>
+                    {(recurrence === 'daily'
+                      ? [
+                          { label: '3 Gün', count: 3 },
+                          { label: '7 Gün', count: 7 },
+                          { label: '14 Gün', count: 14 },
+                          { label: '30 Gün', count: 30 },
+                        ]
+                      : recurrence === 'weekdays'
+                      ? [
+                          { label: '5 Gün (1 Hft)', count: 5 },
+                          { label: '10 Gün (2 Hft)', count: 10 },
+                          { label: '15 Gün (3 Hft)', count: 15 },
+                          { label: '20 Gün (1 Ay)', count: 20 },
+                        ]
+                      : [
+                          { label: '2 Hafta', count: 2 },
+                          { label: '4 Hafta (1 Ay)', count: 4 },
+                          { label: '8 Hafta (2 Ay)', count: 8 },
+                          { label: '12 Hafta (3 Ay)', count: 12 },
+                        ]
+                    ).map((chip) => (
+                      <button
+                        key={chip.count}
+                        type="button"
+                        onClick={() => setRecurrenceCount(chip.count)}
+                        className={`cursor-pointer px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
+                          recurrenceCount === chip.count
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Dynamic explanatory feedback */}
+                  <div className="flex items-center gap-1.5 text-[10px] text-blue-800 bg-blue-50/90 border border-blue-200/80 px-2 py-1 rounded-lg">
+                    <Sparkles className="w-3 h-3 text-blue-600 shrink-0" />
+                    <span>
+                      {recurrence === 'daily' &&
+                        `Başlangıçtan itibaren seçilen saatte her gün olmak üzere toplam ${recurrenceCount} gün boyunca takvime işlenecektir.`}
+                      {recurrence === 'weekdays' &&
+                        `Pazartesi'den Cuma'ya kadar hafta içi günlerde toplam ${recurrenceCount} gün boyunca takvime işlenecektir.`}
+                      {recurrence === 'weekly' &&
+                        `Her hafta aynı gün ve saatte olmak üzere toplam ${recurrenceCount} hafta boyunca takvime işlenecektir.`}
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
 
